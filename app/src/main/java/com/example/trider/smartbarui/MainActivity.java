@@ -101,29 +101,23 @@ public class MainActivity extends Activity {
         public void run() {
             //mText.setText(OutMessage);
             tokens = InMessage.split("[.]+");
-            mText.append(InMessage+ "\n");
+            mText.append("->"+InMessage+ "\n");
             for(int i =0; i < tokens.length; i++){
-                mText.append("->" + tokens[i] + "\n");
+                //Checks for $AD.command
                if(tokens[i].contains("$AD")){
                     //tokens[i+1] = tokens[i+1].replace("\n", "");
-                    mText.append(i+": Analog Value:" + tokens[i+1] + "\n");
+                    mText.append("Analog Value:{" + tokens[i+1] + "}\n");
                     int val = 0;
                     Context context = getApplicationContext();
+                   ///Converts AD string to VAL
                     try{
                         String s = new String(tokens[i+1]);
-                        Toast toast = Toast.makeText(context,"{"+s+"}" , Toast.LENGTH_SHORT);
-                        toast.show();
                         val =  Integer.valueOf(s.trim());
-                        toast = Toast.makeText(context,"{"+val+"}" , Toast.LENGTH_SHORT);
-                        toast.show();
                     }catch(NumberFormatException n){
-                        //
-                        Toast toaste = Toast.makeText(context,"Error Converting val: "+ n.toString() + "\n",Toast.LENGTH_SHORT);
-                        toaste.show();
+                        Toast toast = Toast.makeText(context,"Error Converting val: "+ n.toString() + "\n",Toast.LENGTH_SHORT);
+                        toast.show();
                     }
                     sBar.setProgress(val);
-                    //Toast toast = Toast.makeText(context,"AD: "+tokens[i+1],Toast.LENGTH_SHORT);
-                    //toast.show();
                 }else{
                     //mText.append(Integer.toString(tokens[i].compareTo("Error")));
                 }
@@ -283,7 +277,6 @@ public class MainActivity extends Activity {
         eText = (EditText) findViewById(R.id.editText);
         sBar = (SeekBar) findViewById(R.id.seekBar);
 
-
         sBar.setProgress((int)(System.currentTimeMillis() % 100));
         intent = getIntent();
 
@@ -322,6 +315,7 @@ public class MainActivity extends Activity {
                 DetectUSB.Connection = true;
                 //Creates Singleton class for other activities to use
                 PiComm = new CommStream(mInputStream, mOutputStream, mAccessory, mUsbManager, mFileDescriptor);
+                AppStarted = true;
             }
             Log.v(TAG, mFileDescriptor.toString());
             eText.clearFocus();
@@ -407,6 +401,10 @@ public class MainActivity extends Activity {
     }
     */
 
+
+    public void ClearWindow(View view){
+        mText.setText("");
+    }
 }
 
 

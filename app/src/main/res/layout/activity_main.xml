@@ -97,10 +97,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Analog In Values"
+            android:text="Analog In Value"
             android:id="@+id/textView"
             android:layout_row="0"
-            android:layout_column="9"
+            android:layout_column="8"
             android:enabled="false"
             android:textColor="#ffff0000" />
 
@@ -129,6 +129,16 @@
              android:layout_row="3"
              android:id="@+id/toggleButton3" />
 
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear Window"
+        android:onClick="ClearWindow"
+        android:id="@+id/button5"
+        android:layout_row="3"
+        android:layout_column="4" />
 
     <ToggleButton
              android:layout_width="wrap_content"
@@ -233,13 +243,13 @@
         />
 
     <SeekBar
-        android:layout_width="100dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:max="1024"
         android:id="@+id/seekBar"
         android:layout_row="1"
         android:layout_columnSpan="4"
-        android:layout_column="6"
+        android:layout_column="5"
         />
 
 </GridLayout>

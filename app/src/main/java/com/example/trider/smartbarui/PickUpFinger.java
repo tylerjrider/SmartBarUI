@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,6 +50,15 @@ public class PickUpFinger extends Activity {
 
 
         PiComm = new CommStream();
+        Intent i = getIntent();
+
+        String s = "$DO."+i.getExtras().getString("tString");
+
+        Toast toast = Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG);
+        toast.show();
+
+        PiComm.writeString(s);
+
         if(!PiComm.isInitialized()){
             usbConn.setVisibility(View.INVISIBLE);
         }

@@ -173,6 +173,7 @@ public class PickUpDrink extends Activity {
                         searching = false;
                         Intent intent = new Intent(PickUpDrink.this,PickUpFinger.class);
                         if(searchFailure == true){return;}
+                        intent.putExtra("tString",IncomingString);
                         startActivity(intent);
                     }
                 });
@@ -246,8 +247,8 @@ public class PickUpDrink extends Activity {
             pDialog.dismiss();
             if (file_url != null){
                 Toast.makeText(PickUpDrink.this, file_url, Toast.LENGTH_LONG).show();
-                ParseInputString(file_url);
-                PiComm.writeString(file_url);
+                IncomingString = file_url;
+               PiComm.writeString(IncomingString);
             }
 
         }
