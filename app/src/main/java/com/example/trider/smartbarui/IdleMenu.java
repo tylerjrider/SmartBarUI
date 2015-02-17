@@ -27,7 +27,6 @@ public class IdleMenu extends Activity {
     CommStream PiComm;
 
 
-
     class BackGTask extends TimerTask {
         @Override
         public void run(){
