@@ -21,7 +21,7 @@ public class RegisterFingerPrint extends ActionBarActivity {
 
 CommStream PiComm = new CommStream();
 
-static int trans = 1;
+static int trans = 0;
 
     //States for fingerprints
 public enum FingerState {
@@ -36,19 +36,17 @@ FingerState currentState = FingerState.IDLE;
 FingerState nextState = FingerState.IDLE;
 
 
-
-
     TimerTask ChangeFinger = new TimerTask() {
         public void run() {
             RegisterFingerPrint.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                    ImageView finger = (ImageView) findViewById(R.id.newFingerImg);
-                    //finger.setColorFilter(Color.argb(trans, 0, 0, 255));
+                    finger.setColorFilter(Color.argb(trans-1, 255, 255, 255));
                     Log.d("Color", "Trans is " + trans);
-                    trans = trans*2;
-                    if(trans > 255){
-                        trans =1;
+                    trans = trans+10;
+                    if(trans > 230){
+                        trans = 0;
                     }
                 }
             });
@@ -68,12 +66,13 @@ FingerState nextState = FingerState.IDLE;
             //ret is the size of the size of the incoming buffer
             int ret;
             try {
-                ret = PiComm.getIStream().read(buffer);
+                if(PiComm.isInitialized()) {
+                    ret = PiComm.getIStream().read(buffer);
 
-
-                if (ret < 128) {
-                    String msg = new String(buffer);
-                    RunPrintStateMachine(msg);
+                    if (ret < 128) {
+                        String msg = new String(buffer);
+                        RunPrintStateMachine(msg);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -136,6 +135,8 @@ FingerState nextState = FingerState.IDLE;
                     switch(s){
                         case "$FP.1.Success":
                             nextState = FingerState.SECOND_FINGER;
+                            ImageView finger = (ImageView) findViewById(R.id.newFingerImg);
+                            finger.setColorFilter(Color.argb(220, 255, 255, 255));
                             break;
                         case "FP.1.Failure":
                             nextState = FingerState.WARNING;
@@ -148,6 +149,8 @@ FingerState nextState = FingerState.IDLE;
                     switch(s){
                         case "$FP.2.Success":
                             nextState = FingerState.THIRD_FINGER;
+                            ImageView finger = (ImageView) findViewById(R.id.newFingerImg);
+                            finger.setColorFilter(Color.argb(110, 255, 255, 255));
                             break;
                         case "$FP.2.Failure":
                             nextState = FingerState.WARNING;
@@ -158,6 +161,8 @@ FingerState nextState = FingerState.IDLE;
                     switch(s){
                         case "$FP.3.Success":
                             nextState = FingerState.REGISTERED;
+                            ImageView finger = (ImageView) findViewById(R.id.newFingerImg);
+                            finger.setColorFilter(Color.argb(25, 255, 255, 255));
                             break;
                         case "FP.3.Failure":
                             nextState = FingerState.WARNING;
@@ -167,16 +172,16 @@ FingerState nextState = FingerState.IDLE;
                 case WARNING:
                     break;
             }
+        currentState = nextState;
 
 
-        /*
         RegisterFingerPrint.this.runOnUiThread(new Runnable(){
             @Override
             public void run(){
-                Toast.makeText(getApplicationContext(),"Incoming Message: "+ T,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(),"Incoming Message: "+ currentState.toString(),Toast.LENGTH_SHORT).show();
             }
         });
-        */
+
     }
 
 
