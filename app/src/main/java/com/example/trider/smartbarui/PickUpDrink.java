@@ -177,8 +177,8 @@ public class PickUpDrink extends Activity {
                         startActivity(intent);
                     }
                 });
-            };
-        },4000);
+            }
+        },5000);
 
 
     }
@@ -246,9 +246,11 @@ public class PickUpDrink extends Activity {
             // dismiss the dialog once product deleted
             pDialog.dismiss();
             if (file_url != null){
-                Toast.makeText(PickUpDrink.this, file_url, Toast.LENGTH_LONG).show();
-                IncomingString = file_url;
+               Toast.makeText(PickUpDrink.this, file_url, Toast.LENGTH_LONG).show();
+               IncomingString = file_url;
                PiComm.writeString(IncomingString);
+            }else{
+                Toast.makeText(PickUpDrink.this,"File_url error", Toast.LENGTH_SHORT).show();
             }
 
         }

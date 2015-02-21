@@ -82,6 +82,11 @@ public class IdleMenu extends Activity {
         startActivity(intent);
     }
 
+    public void GoToNewUser(View view){
+
+        startActivity(new Intent(this,NewUser.class));
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will

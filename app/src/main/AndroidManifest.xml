@@ -14,6 +14,8 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -90,6 +92,30 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.trider.smartbarui.PickUpDrink" />
+        </activity>
+        <activity
+            android:name=".NewUser"
+            android:label="@string/title_activity_new_user"
+            android:parentActivityName=".IdleMenu" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.trider.smartbarui.IdleMenu" />
+        </activity>
+        <activity
+            android:name=".RegisterFingerPrint"
+            android:label="@string/title_activity_register_finger_print"
+            android:parentActivityName=".NewUser" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.trider.smartbarui.NewUser" />
+        </activity>
+        <activity
+            android:name=".testActivityr"
+            android:label="@string/title_activity_test_activityr"
+            android:parentActivityName=".TestActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.trider.smartbarui.TestActivity" />
         </activity>
     </application>
 

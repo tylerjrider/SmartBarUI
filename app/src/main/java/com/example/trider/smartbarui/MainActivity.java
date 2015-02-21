@@ -170,7 +170,7 @@ public class MainActivity extends Activity {
  * @title SendCustomText()
  * @description Sending out the user inputted text, by first getting the
  * text in the editText box, converting it to an array of bytes,
- * and tries to write to the output stream contained in seperate class*/
+ * and tries to write to the output stream contained in separate class*/
     public void SendCustomText(View view){
 
 
@@ -244,7 +244,7 @@ public class MainActivity extends Activity {
                 //Sends current time over serial link
                 int t = (int)System.currentTimeMillis();
                 sBar.setProgress(t % 100);
-                OutMessage = (toggle_val[5]) ? Integer.toString(t) : "$LED";
+                OutMessage = "$DO.1.0@W.1.15";
                 toggle_val[5] = !toggle_val[5];
                 break;
             default:

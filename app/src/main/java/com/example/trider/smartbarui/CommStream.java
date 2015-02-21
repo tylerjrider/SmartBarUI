@@ -67,6 +67,8 @@ public class CommStream {
         return initialized;
     }
     public String readString(){
+        //Currently reads the status, will return string
+
         return StatusString;
     }
     public boolean writeString(String s) {
