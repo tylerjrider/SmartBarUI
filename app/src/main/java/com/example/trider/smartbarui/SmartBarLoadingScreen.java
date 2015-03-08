@@ -4,44 +4,21 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Spinner;
-/*
 
-public class testActivityr extends ActionBarActivity {
+
+public class SmartBarLoadingScreen extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_test_activityr);
-
-        intent.getExtras():
-        for
-
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-        if(brand == Whiskey){
-            liqourlist[i] = whiskey_list;
-        }
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-
-
-
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-        Spinner pin1 = (View) findViewById(R.id.spinnner);
-
-        pin1.setVisibility((INVISIBLE));
-
-
+        setContentView(R.layout.activity_smart_bar_loading_screen);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_test_activityr, menu);
+        getMenuInflater().inflate(R.menu.menu_smart_bar_loading_screen, menu);
         return true;
     }
 
@@ -60,4 +37,3 @@ public class testActivityr extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 }
-*/

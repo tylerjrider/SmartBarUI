@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,6 +43,7 @@ public class PickUpDrink extends Activity {
     //Objects
     public DrinkOrder testDrink;
     private CommStream PiComm;
+
     JSONParser jsonParser = new JSONParser();
 
     //Views
@@ -66,6 +69,10 @@ public class PickUpDrink extends Activity {
 
 
 
+    public void onResume(){
+        super.onResume();
+        hideSystemUI();
+    }
 
 
 
@@ -74,42 +81,23 @@ public class PickUpDrink extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pick_up_drink);
-
+        hideSystemUI();
         //Creates a "virtual drink order"
         testDrink = new DrinkOrder();
         //Checks and maintains connection with R-Pi
         PiComm = new CommStream();
 
-        //Testing serial link by hard coding the addition of elements to drink order
-        DrinkOrder.LiquorObj newThing = new DrinkOrder.LiquorObj(1,2,3);
-        testDrink.AddToDrinkOrder(newThing);
-
-        DrinkOrder.MixerObj newThing2 = new DrinkOrder.MixerObj(3,4,true,3);
-        testDrink.AddToDrinkOrder(newThing2);
-
-
-        //Displays the comm status, and virtual drink order, along with its serial equivalent on
-        //the actual UI
-        TextView tView = (TextView) findViewById(R.id.drinkView);
-        //tView.setText("Pi Comm is:" + PiComm.Status()+ "\n" + PiComm.readString());
-        tView.append(testDrink.toString());
-        tView.append(testDrink.serialDrink());
-
         //Hides a progress bar that will be used to indicate there order is being searched for
         pBar = (ProgressBar) findViewById(R.id.findUserProgress);
         pBar.setVisibility(View.INVISIBLE);
 
+        EditText eText = (EditText) findViewById(R.id.txtPin);
 
-
+        eText.setFilters(new InputFilter[] { filter,new InputFilter.LengthFilter(11)});
+        //startWatch(5000);
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_new_user, menu);
-        return true;
-    }
 
     /**
      * Checks for valid pin. Displays warnings if the pin entered is too Long/Short or not numeric.
@@ -119,7 +107,6 @@ public class PickUpDrink extends Activity {
      */
     public void CheckPin(View view){
         Context context = getApplicationContext();
-
         //Hides Message
         InputMethodManager inputManager = (InputMethodManager)
                 getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -141,20 +128,13 @@ public class PickUpDrink extends Activity {
         pinString = eText.getText().toString();
 
         //Checking for pin Length
-        if(pinString.length() != 4){
+        if(pinString.length() != 11){
             toast = Toast.makeText(context, "Pin is too short: " + pinString, Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
 
-        //Checking Numeric-based String for errors
-        try {
-            Pin = Integer.decode(pinString);
-        }catch(NumberFormatException e){
-            toast = Toast.makeText(context, "Warn: Pin decoded incorrectly. ", Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
+
 
         new AttemptGetDrink().execute();
 
@@ -172,7 +152,17 @@ public class PickUpDrink extends Activity {
                         pBar.setVisibility(View.INVISIBLE);
                         searching = false;
                         Intent intent = new Intent(PickUpDrink.this,PickUpFinger.class);
-                        if(searchFailure == true){return;}
+
+                        //If nothing came up
+                        if(searchFailure){
+                            return;
+                        }
+                        //Otherwise write the drink order to the Pi
+                        //PiComm.writeString("$DO,"+ IncomingString );
+                        DrinkOrder t = new DrinkOrder();
+                        t.DecodeString(IncomingString);
+                        t.storeDrinkOrder(IncomingString);
+                        PiComm.writeString("$FPQ," +eText.getText().toString());
                         intent.putExtra("tString",IncomingString);
                         startActivity(intent);
                     }
@@ -184,12 +174,9 @@ public class PickUpDrink extends Activity {
     }
 
     class AttemptGetDrink extends AsyncTask<String, String, String> {
-
         /**
          * Before starting background thread Show Progress Dialog
          * */
-
-
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -198,6 +185,7 @@ public class PickUpDrink extends Activity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
+            Log.d("AGD","Pre-Exec");
         }
 
         @Override
@@ -206,8 +194,9 @@ public class PickUpDrink extends Activity {
             // Check for success tag
             int success;
             String userpin = eText.getText().toString();
-
+            new DrinkOrder().InUserPinString = userpin;
             try {
+                Log.d("AGD","Mid-Execute");
                 // Building Parameters
                 List<NameValuePair> params = new ArrayList<NameValuePair>();
                 params.add(new BasicNameValuePair("pin", userpin));
@@ -234,6 +223,8 @@ public class PickUpDrink extends Activity {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+            } catch(NullPointerException npe){
+                npe.printStackTrace();
             }
 
             return null;
@@ -248,16 +239,72 @@ public class PickUpDrink extends Activity {
             if (file_url != null){
                Toast.makeText(PickUpDrink.this, file_url, Toast.LENGTH_LONG).show();
                IncomingString = file_url;
-               PiComm.writeString(IncomingString);
+
             }else{
-                Toast.makeText(PickUpDrink.this,"File_url error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(PickUpDrink.this,"Failure to Access Server. Check Internet Connection"
+                        , Toast.LENGTH_SHORT).show();
             }
 
         }
 
     }
 
+    /**
+     * Skips screen
+     * @param view
+     */
+    public void SkipToPickFinger (View view){
+        startActivity(new Intent(this,PickUpFinger.class));
 
+    }
+
+//Fitlers anyother input than 11 phone numbers+
+    InputFilter filter = new InputFilter() {
+        public CharSequence filter(CharSequence source, int start, int end,
+                                   Spanned dest, int dstart, int dend) {
+            for (int i = start; i < end; i++) {
+                if (!Character.isDigit(source.charAt(i))) {
+                    return "";
+                }
+            }
+            return null;
+        }
+    };
+
+
+
+    /***********System Level Functions*******/
+    public void startWatch(int watch_t) {
+        new Timer().schedule(new TimerTask() {
+            public void run() {
+                startActivity(new Intent(PickUpDrink.this, IdleMenu.class));
+            }
+
+        }, watch_t);
+    }
+
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        View mDecorView;
+        mDecorView = getWindow().getDecorView();
+        mDecorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
+
+/*Default Functions*/
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_new_user, menu);
+        return true;
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -274,13 +321,8 @@ public class PickUpDrink extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void ParseInputString(String s){
-        ParsedString = s.split("[,]+");
-        for(int i = 0; i < ParsedString.length; i++){
-            PiComm.writeString(ParsedString[i]);
-            Log.d("PS", ParsedString[i]);
-        }
-    }
+
+
 
 
 }

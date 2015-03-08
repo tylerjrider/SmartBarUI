@@ -27,7 +27,7 @@ public class CommStream {
     private static UsbManager usbMan;
     private static ParcelFileDescriptor parcelFD;
 
-    public static final String Status_Created          =    "COMM_CREATED";
+    public static final String Status_Created          =    "UNINITIALIZED_COMM_CREATED";
     public static final String Status_Connected        =    "USB_CONNECTED";
     public static final String Status_Disconnected     =    "USB_DISCONNECTED";
 
@@ -36,6 +36,7 @@ public class CommStream {
 
     public static byte[] readBuffer = new byte[128];
     public static byte[] writeBuffer = new byte[128];
+    public int ret;
 
 
 
@@ -53,8 +54,6 @@ public class CommStream {
     }
 
     public CommStream(){
-        //mInputStream = null;
-        //mOutputStream = null;
         if(initialized){return;}
         StatusString = Status_Created;
     }
@@ -68,11 +67,24 @@ public class CommStream {
     }
     public String readString(){
         //Currently reads the status, will return string
-
-        return StatusString;
+         byte[] readBuffer = new byte[128];
+        if(isInitialized()){
+            try{
+                ret  = mInputStream.read(readBuffer);
+                return new String(readBuffer);
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }else {
+            return null;
+        }
+        return null;
     }
     public boolean writeString(String s) {
         if (mOutputStream != null) {
+
+            if(s == null){return false;}
+            //Get clean buffer each time;
             byte[] outBuffer;
             outBuffer = s.getBytes();
             //Writes to output
@@ -126,5 +138,30 @@ public class CommStream {
     public void SetStatus(String s){
         StatusString = s;
     }
+
+
+
+//    Runnable mListenerTask = new Runnable() {
+//        @Override
+//        public void run() {
+//
+//            InMessage = readString();
+//            if(InMessage != null){
+//                mText.post(mUpdateUI2);
+//            }
+//            //Waits for new input communication
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            //Restarts this thread.
+//            new Thread(this).start();
+//        }
+//    };
+//
+//
+
+
 
 }

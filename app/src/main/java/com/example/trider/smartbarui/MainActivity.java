@@ -74,6 +74,7 @@ public class MainActivity extends Activity {
     String TAG = "DebugPy";
 
     static boolean AppStarted = false;
+    boolean isActive = true;
 
     // Toggle values for Toggle Buttons
     boolean[] toggle_val = {false,false,false,false,false,false};
@@ -83,13 +84,33 @@ public class MainActivity extends Activity {
     DetectUSB detectUSB = new DetectUSB();
 
 
-    /*Will update the screen based on whatever message was received
-    Runnable mUpdateUI = new Runnable() {
+    /**
+     * @title: mListenerTask
+     * @description: The background thread that receives serial communication from the raspberry pi,
+     *
+     */
+    Runnable mListenerTask = new Runnable() {
         @Override
         public void run() {
-            mText.setText(InMessage);
+
+            InMessage = PiComm.readString();
+            if(InMessage != null){
+                mText.post(mUpdateUI2);
+            }
+            //Waits for new input communication
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //Restarts this thread.
+//            if(isActive) {
+                new Thread(this).start();
+//            }
         }
-    };*/
+    };
+
+
 
     /**
      * @title: mUpdateUI2
@@ -125,146 +146,16 @@ public class MainActivity extends Activity {
         }
     };
 
-
-
-    /**
-     * @title: mListenerTask
-     * @description: The background thread that receives serial communication from the raspberry pi,
-     *
-     */
-    Runnable mListenerTask = new Runnable() {
-        @Override
-        public void run() {
-            byte[] buffer = new byte[128];
-            //ret is the size of the size of the incoming buffer
-            int ret;
-            try {
-                //InMessage = "> ";
-                ret = PiComm.getIStream().read(buffer);
-                if (ret < 128) {
-                    String msg = new String(buffer);
-                    InMessage = msg;
-                    mText.post(mUpdateUI2);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                /*
-                    context = getApplicationContext();
-                    Toast toast = Toast.makeText(context,"Error Reading: ret >= 32",Toast.LENGTH_LONG);
-                    toast.show();*/
-            }
-            //Waits for new input communication
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //Restarts this thread.
-            new Thread(this).start();
-        }
-    };
-
-
-
-/**
- * @title SendCustomText()
- * @description Sending out the user inputted text, by first getting the
- * text in the editText box, converting it to an array of bytes,
- * and tries to write to the output stream contained in separate class*/
-    public void SendCustomText(View view){
-
-
-        //Hides the keyboard after hitting enter.
-        InputMethodManager inputManager = (InputMethodManager)
-                getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-                InputMethodManager.HIDE_NOT_ALWAYS);
-
-        //If the USB isn't connected, warn and don't try sending.
-        if(!DetectUSB.Connection){
-            ConnectionNotMadeWarning(view);
-            return;
-        }
-
-        //Grabs the text from the edit text box, and converts it to string.
-        eText= (EditText) findViewById(R.id.editText);
-        OutMessage = eText.getText().toString();
-
-        //Writes to output
-        if(PiComm.writeString(OutMessage)){
-            return;
-        }
-        //If there is an error writing the output stream. Could be redundant because of DetectUSB.
-        context = getApplicationContext();
-        Toast toast = Toast.makeText(context,"Error Writing: IO out error",Toast.LENGTH_LONG);
-        toast.show();
-
-    }
-
-    /**
-     * @title: sendMessage()
-     * @description Called when the user clicks one of several buttons. The method sends a preset
-     *  message to be decoded my the pi, and updates the appropriate variables.
-     * */
-    public void sendMessage(View view) {
-
-        //ToggleButton tBut;
-        //Button b;
-
-        //view.getId() is the corresponding button that called the method.
-        switch (view.getId()) {
-            case R.id.hello_pi:
-                OutMessage = "Hello Raspberry Pi";
-                break;
-            case R.id.fuck_pi:
-                OutMessage = "FUCK YOU PI";
-                break;
-            case R.id.toggleButton:
-                //Assigns string value based on toggle value, and then toggles the value.
-                OutMessage = (toggle_val[0]) ? "LED.OFF" : "LED.ON";
-                toggle_val[0] = !toggle_val[0];
-                break;
-            case R.id.toggleButton2:
-                OutMessage = (toggle_val[1]) ? "IO.1.1" : "IO.1.0";
-                toggle_val[1] = !toggle_val[1];
-                break;
-            case R.id.toggleButton3:
-                OutMessage = (toggle_val[2]) ? "IO.2.1" : "IO.2.0";
-                toggle_val[2] = !toggle_val[2];
-                break;
-            case R.id.toggleButton4:
-                OutMessage = (toggle_val[3]) ? "$LED.0" : "$LED.0";
-                toggle_val[3] = !toggle_val[3];
-                break;
-            case R.id.toggleButton5:
-                OutMessage = (toggle_val[4]) ? "$LED.1" : "$LED.1";
-                toggle_val[4] = !toggle_val[4];
-                break;
-            case R.id.toggleButton6:
-                //Sends current time over serial link
-                int t = (int)System.currentTimeMillis();
-                sBar.setProgress(t % 100);
-                OutMessage = "$DO.1.0@W.1.15";
-                toggle_val[5] = !toggle_val[5];
-                break;
-            default:
-                context = getApplicationContext();
-                Toast toast = Toast.makeText(context,"Unknown View called send",Toast.LENGTH_SHORT);
-                toast.show();
-                break;
-        }
-        if(!DetectUSB.Connection){
-            ConnectionNotMadeWarning(view);
-            return;
-        }
-
-        if(!PiComm.writeString(OutMessage)) {
-            context = getApplicationContext();
-            Toast toast = Toast.makeText(context,"Error Writing: IO out error",Toast.LENGTH_LONG);
-            toast.show();
-        }
-
-    }
+//    protected void onStop(){
+//        super.onStop();
+//        PiComm.writeString("STOP");
+//        isActive = false;
+//    }
+//    protected void onResume(){
+//        super.onResume();
+//        PiComm.writeString("Resume");
+//        isActive = true;
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -281,8 +172,8 @@ public class MainActivity extends Activity {
         intent = getIntent();
 
         /**
-        * On Opening the app or app getting started by accessory;
-        */
+         * On Opening the app or app getting started by accessory;
+         */
         if (!AppStarted) {
             //Creates a new PiComm
             PiComm = new CommStream("hey");
@@ -322,7 +213,7 @@ public class MainActivity extends Activity {
             new Thread(mListenerTask).start();
             /**
              * Returning to this screen for a second time
-              */
+             */
         }else {
         /*PiComm gets initialized once, and if returning to the main activity, do not make another one*/
             if (PiComm.isInitialized()) {
@@ -338,6 +229,146 @@ public class MainActivity extends Activity {
 
         }
     }
+
+/**
+ * @title SendCustomText()
+ * @description Sending out the user inputted text, by first getting the
+ * text in the editText box, converting it to an array of bytes,
+ * and tries to write to the output stream contained in separate class*/
+    public void SendCustomText(View view){
+
+        //Hides the keyboard after hitting enter.
+        InputMethodManager inputManager = (InputMethodManager)
+                getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
+
+        //If the USB isn't connected, warn and don't try sending.
+        Boolean DEBUG_MODE = false;
+        if(DEBUG_MODE){
+            eText= (EditText) findViewById(R.id.editText);
+            OutMessage = eText.getText().toString();
+            DrinkOrder t = new DrinkOrder();
+            //t.DecodeString(OutMessage);
+            mText.setText(t.DecodeString(OutMessage));
+            return;
+        }
+
+        if(!DetectUSB.Connection){
+            ConnectionNotMadeWarning(view);
+            return;
+        }
+
+        //Grabs the text from the edit text box, and converts it to string.
+        eText= (EditText) findViewById(R.id.editText);
+        OutMessage = eText.getText().toString();
+
+        //Writes to output
+        if(PiComm.writeString(OutMessage)){
+            return;
+        }
+        //If there is an error writing the output stream. Could be redundant because of DetectUSB.
+        context = getApplicationContext();
+        Toast toast = Toast.makeText(context,"Error Writing: IO out error",Toast.LENGTH_LONG);
+        toast.show();
+
+    }
+
+        public void tryParse(View view) {
+            eText = (EditText) findViewById(R.id.editText);
+            OutMessage = eText.getText().toString();
+            OutMessage = "$IV,2,2@0,WH,1,54.3,59.2@1,GN,1,49.9,59.2@17,BO,2,3.4,37.1";
+            String s = new SystemCodeParser().DecodeAccessoryMessage(OutMessage);
+            Inventory inventory = new Inventory();
+            inventory.AddToInventory(3,"WH","Windsor Canadian",39.2,39.2);
+            inventory.AddToInventory(4,"WH","Rich and Rare",39.2,39.2);
+            inventory.AddToInventory(5,"WH","Wild Turkey",39.2,39.2);
+            inventory.AddToInventory(6,"WH","Seagram's",39.2,39.2);
+            inventory.AddToInventory(7,"WH","Kessler",39.2,39.2);
+            inventory.AddToInventory(8,"WH","Canadian Club",39.2,39.2);
+            inventory.AddToInventory(9,"WH","Dewar's Scotch",39.2,39.2);
+            inventory.AddToInventory(10,"WH","Candian Mist",39.2,39.2);
+            inventory.AddToInventory(11,"WH","Jack Daniel's Tennessee Honey",39.2,39.2);
+            inventory.AddToInventory(12,"WH","Evan William's",39.2,39.2);
+            inventory.AddToInventory(13,"WH","Southern Comfort",39.2,39.2);
+            inventory.AddToInventory(14,"WH","Black Velvet",39.2,39.2);
+            inventory.AddToInventory(15,"WH","Jameson Irish",39.2,39.2);
+            inventory.AddToInventory(16,"WH","Seagram's 7 Crown",39.2,39.2);
+            inventory.AddToInventory(18,"WH","Fireball",39.2,39.2);
+//            inventory.AddToInventory(19,"WH","Jim Bean",39.2,39.2);
+//            inventory.AddToInventory(20,"WH","Crown Royal",39.2,39.2);
+
+
+
+
+        }
+
+
+    /**
+     * @title: sendMessage()
+     * @description Called when the user clicks one of several buttons. The method sends a preset
+     *  message to be decoded my the pi, and updates the appropriate variables.
+     * */
+    public void sendMessage(View view) {
+
+        //ToggleButton tBut;
+        //Button b;
+        //view.getId() is the corresponding button that called the method.
+        switch (view.getId()) {
+            case R.id.hello_pi:
+                OutMessage = "Hello Raspberry Pi";
+                break;
+            case R.id.fuck_pi:
+                OutMessage = "FUCK YOU PI";
+                break;
+            case R.id.toggleButton:
+                //Assigns string value based on toggle value, and then toggles the value.
+                OutMessage = (toggle_val[0]) ? "LED.OFF" : "LED.ON";
+                toggle_val[0] = !toggle_val[0];
+                break;
+            case R.id.toggleButton2:
+                OutMessage = (toggle_val[1]) ? "IO.1.1" : "IO.1.0";
+                toggle_val[1] = !toggle_val[1];
+                break;
+            case R.id.toggleButton3:
+                OutMessage = (toggle_val[2]) ? "IO|2,1" : "IO.2.0";
+                toggle_val[2] = !toggle_val[2];
+                break;
+            case R.id.toggleButton4:
+                OutMessage = (toggle_val[3]) ? "$LED|0" : "$LED|0";
+                toggle_val[3] = !toggle_val[3];
+                break;
+            case R.id.toggleButton5:
+                OutMessage = (toggle_val[4]) ? "$LED.1" : "$LED.1";
+                toggle_val[4] = !toggle_val[4];
+                break;
+            case R.id.toggleButton6:
+                //Sends current time over serial link
+                int t = (int)System.currentTimeMillis();
+                sBar.setProgress(t % 100);
+                OutMessage = "$DO|1,0@W,1,1.5";
+                toggle_val[5] = !toggle_val[5];
+                break;
+            default:
+                context = getApplicationContext();
+                Toast toast = Toast.makeText(context,"Unknown View called send",Toast.LENGTH_SHORT);
+                toast.show();
+                break;
+        }
+        if(!DetectUSB.Connection){
+            ConnectionNotMadeWarning(view);
+            return;
+        }
+
+        if(!PiComm.writeString(OutMessage)) {
+            context = getApplicationContext();
+            Toast toast = Toast.makeText(context,"Error Writing: IO out error",Toast.LENGTH_LONG);
+            toast.show();
+        }
+
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -405,6 +436,11 @@ public class MainActivity extends Activity {
     public void ClearWindow(View view){
         mText.setText("");
     }
+
+
+
+
+
 }
 
 

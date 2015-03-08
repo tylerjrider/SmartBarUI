@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Welcome, Please Enter Your Four Digit Pin"
+        android:text="Welcome, Please Enter Your 11-Digit Phone Number"
         android:textColor="@color/black"
         android:textSize="30dp"
         android:id="@+id/textView4"
@@ -38,24 +38,32 @@
 
     <EditText
         android:id="@+id/txtPin"
-        android:layout_width="250dp"
-        android:layout_marginLeft="300dp"
+        android:layout_width="350dp"
+        android:layout_gravity="center_horizontal"
         android:layout_height="wrap_content"
-        android:hint="Pin Number"
-        android:textSize="40dp"
-        android:inputType="numberPassword"
-        android:maxLength="4">
-        <requestFocus/>
+        android:hint="e.g. 15555555555"
+        android:textSize="40sp"
+        android:inputType="phone"
+        android:maxLength="11">
     </EditText>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="300dp"
+        android:layout_gravity="center_horizontal"
         android:hint="Password"
         android:text="Enter"
         android:textSize="40dp"
         android:id="@+id/button9"
         android:onClick="CheckPin"/>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Skip"
+        android:onClick="SkipToPickFinger"
+        android:id="@+id/button16"
+        android:layout_gravity="right" />
 
 </LinearLayout>
